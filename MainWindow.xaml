@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Юмагулов_Глазки_save"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" FontFamily="Century Gothic." Icon="Res/Глазки-save.png">
+        Title="MainWindow" Height="450" Width="800" FontFamily="Century Gothic" Icon="Res/Глазки-save.png">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>

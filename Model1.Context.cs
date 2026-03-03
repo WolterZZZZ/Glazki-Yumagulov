@@ -12,18 +12,18 @@ namespace Юмагулов_Глазки_save
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
-
+    
     public partial class Юмагуловглазки2Entities : DbContext
     {
+
         private static Юмагуловглазки2Entities _context;
 
         public static Юмагуловглазки2Entities GetContext()
         {
-            if (_context == null)
+            if (_context == null) 
                 _context = new Юмагуловглазки2Entities();
             return _context;
         }
-
 
         public Юмагуловглазки2Entities()
             : base("name=Юмагуловглазки2Entities")
