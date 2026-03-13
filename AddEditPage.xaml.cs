@@ -20,6 +20,7 @@ namespace Юмагулов_Глазки_save
 
     public partial class AddEditPage : Page
     {
+        
         private Agent _currentAgent = new Agent();
         private Юмагуловглазки2Entities _db = new Юмагуловглазки2Entities();
         public AddEditPage(Agent selectedAgent = null)
@@ -37,6 +38,8 @@ namespace Юмагулов_Глазки_save
 
             DataContext = _currentAgent;
             ComboType.ItemsSource = _db.AgentType.ToList();
+            DGProductSales.ItemsSource = _db.ProductSale.Where(p => p.AgentID == _currentAgent.ID).ToList();
+            ComboProduct.ItemsSource = _db.Product.ToList();
         }
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
@@ -177,6 +180,71 @@ namespace Юмагулов_Глазки_save
                     MessageBox.Show(ex.Message.ToString());
                 }
             }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnAddSale_Click(object sender, RoutedEventArgs e)
+        {
+            if (ComboProduct.SelectedItem == null || string.IsNullOrWhiteSpace(TBoxCount.Text) || DPDate.SelectedDate == null)
+            {
+                MessageBox.Show("Заполните все поля для продажи!");
+                return;
+            }
+
+            if (!int.TryParse(TBoxCount.Text, out int count) || count <= 0)
+            {
+                MessageBox.Show("Количество должно быть положительным числом!");
+                return;
+            }
+
+            var newSale = new ProductSale
+            {
+                AgentID = _currentAgent.ID,
+                ProductID = (ComboProduct.SelectedItem as Product).ID,
+                SaleDate = (DateTime)DPDate.SelectedDate,
+                ProductCount = count
+            };
+
+            _db.ProductSale.Add(newSale);
+            _db.SaveChanges();
+
+            DGProductSales.ItemsSource = _db.ProductSale.Where(p => p.AgentID == _currentAgent.ID).ToList();
+        }
+
+        private void ComboProduct_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string searchText = ComboProduct.Text;
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                ComboProduct.ItemsSource = _db.Product.ToList();
+            }
+            else
+            {
+                ComboProduct.ItemsSource = _db.Product
+                    .Where(p => p.Title.ToLower().Contains(searchText.ToLower()))
+                    .ToList();
+            }
+        }
+
+        private void BtnDeleteSale_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedSale = (sender as Button).DataContext as ProductSale;
+
+            if (MessageBox.Show("Удалить запись о продаже?", "Внимание", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                _db.ProductSale.Remove(selectedSale);
+                _db.SaveChanges();
+                DGProductSales.ItemsSource = _db.ProductSale.Where(p => p.AgentID == _currentAgent.ID).ToList();
+            }
+        }
+
+        private void ComboProduct_TextChanged_1(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }

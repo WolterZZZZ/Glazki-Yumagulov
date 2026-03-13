@@ -1,0 +1,16 @@
+﻿<Window x:Class="Юмагулов_Глазки_save.PriorityWindows"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Юмагулов_Глазки_save"
+        mc:Ignorable="d"
+        Title="PriorityWindows" Height="450" Width="800">
+    <Grid>
+        <StackPanel Margin="20" VerticalAlignment="Center">
+            <TextBlock Text="Введите новый приоритет:" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+            <TextBox x:Name="TBox_Priority" Width="100" HorizontalContentAlignment="Center" Margin="0,0,0,20"/>
+            <Button Content="Изменить" Click="Button_Click"  Width="100" Background="#B175EE" Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -7,25 +7,27 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="ShopPage" FontFamily="Century Gothic" IsVisibleChanged="Page_IsVisibleChanged" >
+    <Page.Resources>
+        <local:DiscountColorConverter x:Key="discountColorConverter"/>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto" MinWidth="208"/>
+                <ColumnDefinition Width="Auto" MinWidth="113"/>
+                <ColumnDefinition Width="Auto" MinWidth="235"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox x:Name="TBoxSearch" TextChanged="TBoxSearch_TextChanged" Margin="0,0,10,0" />
-
-            <ComboBox Grid.Column="1" Width="150" x:Name="ComboSort" SelectionChanged="ComboSort_SelectionChanged" Margin="0,0,10,0">
+            <TextBox x:Name="TBoxSearch" TextChanged="TBoxSearch_TextChanged" Margin="0,0,10,0" VerticalAlignment="Center" Height="16"/>
+            <ComboBox Grid.Column="1" x:Name="ComboSort" SelectionChanged="ComboSort_SelectionChanged" VerticalAlignment="Center" Height="20" HorizontalAlignment="Center" Width="164">
                 <ComboBoxItem Content="Без сортировки"/>
                 <ComboBoxItem Content="Наименование (А-Я)"/>
                 <ComboBoxItem Content="Наименование (Я-А)"/>
@@ -34,23 +36,21 @@
                 <ComboBoxItem Content="Скидка (возрастание)"/>
                 <ComboBoxItem Content="Скидка (убывание)"/>
             </ComboBox>
-
-            <ComboBox Grid.Column="2" Width="150" x:Name="ComboFilter" SelectionChanged="ComboFilter_SelectionChanged" DisplayMemberPath="Title" Margin="0,0,10,0"/>
-
-            <Button Grid.Column="3" Content="Добавить агента" x:Name="BtnAdd" Click="BtnAdd_Click" Padding="10,0" Background="#B175EE" Foreground="White"/>
+            <ComboBox Grid.Column="2" x:Name="ComboFilter" SelectionChanged="ComboFilter_SelectionChanged" DisplayMemberPath="Title" Margin="5,0,5,0" VerticalAlignment="Center" Height="20"/>
+            <Button Grid.Column="3" Content="Добавить агента" x:Name="BtnAdd" Click="BtnAdd_Click" Padding="15,0" VerticalAlignment="Center" Height="30" Margin="30,0,0,0" HorizontalAlignment="Left" Width="205"/>
         </Grid>
 
-        <ListView x:Name="AgentListView" Grid.Row="1" HorizontalContentAlignment="Stretch">
+        <ListView x:Name="AgentListView" Grid.Row="1" HorizontalContentAlignment="Stretch" Margin="10,0">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Padding="10">
+                    <Border BorderBrush="Gray" BorderThickness="1" Margin="5" Padding="10"
+                            Background="{Binding DiscountPercent, Converter={StaticResource discountColorConverter}}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="150"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-
                             <Image Grid.Column="0" Width="100" Height="100" Stretch="Uniform">
                                 <Image.Source>
                                     <Binding Path="Logo">
@@ -60,47 +60,41 @@
                                     </Binding>
                                 </Image.Source>
                             </Image>
-
                             <StackPanel Grid.Column="1" Margin="10,0">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding AgentType.Title}" FontSize="18"/>
                                     <TextBlock Text=" | " FontSize="18"/>
-                                    <TextBlock Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" FontSize="18" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold"/>
                                 </StackPanel>
-
                                 <TextBlock Text="{Binding TotalSales, StringFormat='{}{0} продаж за год'}" Margin="0,5"/>
                                 <TextBlock Text="{Binding Phone}"/>
                                 <TextBlock Text="{Binding Priority, StringFormat='Приоритетность: {0}'}" Margin="0,5"/>
-
                             </StackPanel>
-
-                            <StackPanel Grid.Column="2" VerticalAlignment="Stretch">
-                                <TextBlock Text="{Binding DiscountPercent, StringFormat='{}{0}%'}" 
-               FontSize="20" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-
-                                <Button Content="Редактировать" 
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Right"
-            Margin="0,20,0,0"
-            x:Name="BtnEdit"
-            Click="BtnEdit_Click" 
-            Background="#B175EE" 
-            Foreground="White"
-            Padding="5,0"/>
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DiscountPercent, StringFormat='{}{0}%'}" FontSize="20" HorizontalAlignment="Right"/>
+                                <Button Content="Редактировать" Margin="0,15,0,0" x:Name="BtnEdit" Click="BtnEdit_Click" Padding="10,2"/>
                             </StackPanel>
                         </Grid>
                     </Border>
-                    
                 </DataTemplate>
-                
             </ListView.ItemTemplate>
         </ListView>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
-            <TextBlock x:Name="TextBlockPageInfo" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <Button x:Name="BtnPrev" Content="&lt;" Click="BtnPrev_Click"  Width="30" Margin="5"/>
-            <StackPanel x:Name="StackPanelPages" Orientation="Horizontal"/>
-            <Button x:Name="BtnNext" Content="&gt;" Click="BtnNext_Click"  Width="30" Margin="5"/>
-        </StackPanel>
-        
+
+        <Grid Grid.Row="2" Margin="10">
+            <Button x:Name="BtnChangePriority" 
+                    Content="Изменить приоритет" 
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Width="256" Padding="10,0"
+                    Background="#B175EE"
+                    Click="BtnChangePriority_Click" Margin="5,0,0,0"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <TextBlock x:Name="TextBlockPageInfo" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <Button x:Name="BtnPrev" Content="&lt;" Click="BtnPrev_Click" Width="30" Height="30" Margin="2"/>
+                <StackPanel x:Name="StackPanelPages" Orientation="Horizontal"/>
+                <Button x:Name="BtnNext" Content="&gt;" Click="BtnNext_Click" Width="30" Height="30" Margin="2"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

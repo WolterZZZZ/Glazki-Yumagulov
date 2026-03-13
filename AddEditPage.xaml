@@ -5,39 +5,43 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Юмагулов_Глазки_save"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="700" d:DesignWidth="1000"
       Title="AddEditPage" FontFamily="Century Gothic">
 
     <Grid Background="White">
-        <ScrollViewer>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20">
                 <TextBlock Text="Информация об агенте" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Width="400">
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
                         <TextBlock Text="Наименование:"/>
-                        <TextBox Text="{Binding Title}" Margin="0,5,10,10"/>
+                        <TextBox Text="{Binding Title}" Margin="0,5,0,10"/>
 
                         <TextBlock Text="Тип агента:"/>
-                        <ComboBox x:Name="ComboType" SelectedItem="{Binding AgentType}" DisplayMemberPath="Title" Margin="0,5,10,10"/>
+                        <ComboBox x:Name="ComboType" SelectedItem="{Binding AgentType}" DisplayMemberPath="Title" Margin="0,5,0,10"/>
 
                         <TextBlock Text="Приоритет:"/>
-                        <TextBox Text="{Binding Priority}" Margin="0,5,10,10"/>
+                        <TextBox Text="{Binding Priority}" Margin="0,5,0,10"/>
 
-                        <TextBlock Text="ИНН:"/>
-                        <TextBox Text="{Binding INN}" MaxLength="12" Margin="0,5,10,10"/>
-
-                        <TextBlock Text="КПП:"/>
-                        <TextBox Text="{Binding KPP}" MaxLength="9" Margin="0,5,10,10"/>
+                        <TextBlock Text="ИНН / КПП:"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding INN}" MaxLength="12" Margin="0,5,5,10" Tag="ИНН"/>
+                            <TextBox Grid.Column="1" Text="{Binding KPP}" MaxLength="9" Margin="5,5,0,10" Tag="КПП"/>
+                        </Grid>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1">
+                    <StackPanel Grid.Column="1" Margin="10,0">
                         <TextBlock Text="Адрес:"/>
                         <TextBox Text="{Binding Address}" Margin="0,5,0,10"/>
 
@@ -51,24 +55,71 @@
                         <TextBox Text="{Binding Email}" Margin="0,5,0,10"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" Margin="20,0,0,0" VerticalAlignment="Top">
+                    <StackPanel Grid.Column="2" Margin="10,0,0,0" VerticalAlignment="Top">
                         <TextBlock Text="Логотип:" HorizontalAlignment="Center"/>
-                        <Image x:Name="AgentLogo" Width="150" Height="150" Margin="0,10" Stretch="Uniform">
-                            <Image.Source>
-                                <Binding Path="Logo">
-                                    <Binding.TargetNullValue>
-                                        <BitmapImage UriSource="Res/picture.png" />
-                                    </Binding.TargetNullValue>
-                                </Binding>
-                            </Image.Source>
-                        </Image>
-                        <Button Content="Изменить" x:Name="BtnChangeLogo" Click="BtnChangeLogo_Click"  Background="#B175EE"/>
+                        <Border BorderBrush="LightGray" BorderThickness="1" Margin="0,10">
+                            <Image x:Name="AgentLogo" Width="120" Height="120" Stretch="Uniform">
+                                <Image.Source>
+                                    <Binding Path="Logo">
+                                        <Binding.TargetNullValue>
+                                            <BitmapImage UriSource="Res/picture.png" />
+                                        </Binding.TargetNullValue>
+                                    </Binding>
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <Button Content="Изменить" x:Name="BtnChangeLogo" Click="BtnChangeLogo_Click"/>
                     </StackPanel>
                 </Grid>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
-                    <Button x:Name="BtnSave" Content="Сохранить" Width="150" Height="35" Margin="10" Click="BtnSave_Click"  Background="#B175EE"/>
-                    <Button x:Name="BtnDelete" Content="Удалить" Width="150" Height="35" Margin="10" Click="BtnDelete_Click_1"  Background="#B175EE"/>
+                <Separator Margin="0,20" Background="LightGray"/>
+
+                <TextBlock Text="История реализации продукции" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <DataGrid x:Name="DGProductSales"  AutoGenerateColumns="False" Height="200" 
+                          IsReadOnly="True" CanUserAddRows="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Продукция" Binding="{Binding Product.Title}" Width="600"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding SaleDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="120"/>
+                        <DataGridTextColumn Header="Количество" Binding="{Binding ProductCount}" Width="100"/>
+                        <DataGridTemplateColumn Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="Удалить" x:Name="BtnDeleteSale" Click="BtnDeleteSale_Click"
+                                            Padding="Auto"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="ComboProduct"  IsEditable="True" 
+                              TextBoxBase.TextChanged="ComboProduct_TextChanged_1"
+                              DisplayMemberPath="Title" Margin="0,0,10,0" 
+                              VerticalAlignment="Center" Height="25"/>
+
+                    <DatePicker Grid.Column="1" x:Name="DPDate"  Width="150" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                    <TextBox Grid.Column="2" x:Name="TBoxCount"  Width="80" Margin="0,0,10,0" 
+                             VerticalAlignment="Center" Height="25" VerticalContentAlignment="Center"/>
+
+                    <Button Grid.Column="3" Content="Добавить" x:Name="BtnAddSale" Click="BtnAddSale_Click" 
+                            Width="100" Height="30"/>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
+                    <Button x:Name="BtnDelete" Content="Удалить агента" Width="192" Height="35" Margin="10,0" 
+                            Click="BtnDelete_Click_1" />
+                    <Button x:Name="BtnSave" Content="Сохранить" Width="150" Height="35" 
+                            Click="BtnSave_Click" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

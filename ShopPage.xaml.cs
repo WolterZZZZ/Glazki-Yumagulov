@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Data.Entity; // Для работы .Include()
 using System.Windows.Media;
+using System.Windows.Data;
 
 namespace Юмагулов_Глазки_save
 {
@@ -44,40 +45,46 @@ namespace Юмагулов_Глазки_save
 
         private void UpdateData()
         {
-            var currentAgents = _db.Agent
-                .Include(a => a.AgentType)
-                .Include("ProductSale.Product")
-                .ToList();
+            // 1. Получаем данные (с подгрузкой связанных таблиц)
+            var currentAgents = _db.Agent.Include(p => p.AgentType).Include(p => p.ProductSale).ToList();
 
-            string searchText = TBoxSearch.Text.ToLower().Replace(" ", "");
-            if (!string.IsNullOrWhiteSpace(searchText))
-            {
-                currentAgents = currentAgents.Where(p =>
-                    p.Title.ToLower().Contains(searchText) ||
-                    p.Phone.Replace("(", "").Replace(")", "").Replace("-", "").Contains(searchText)
-                ).ToList();
-            }
-
+            // 2. Фильтрация по типу
             if (ComboFilter.SelectedIndex > 0)
             {
                 var selectedType = ComboFilter.SelectedItem as AgentType;
                 currentAgents = currentAgents.Where(p => p.AgentTypeID == selectedType.ID).ToList();
             }
 
-            switch (ComboSort.SelectedIndex)
+            // 3. Поиск по наименованию/телефону/почте
+            currentAgents = currentAgents.Where(p => p.Title.ToLower().Contains(TBoxSearch.Text.ToLower()) ||
+                                                     p.Phone.Replace(" ", "").Contains(TBoxSearch.Text.ToLower()) ||
+                                                     p.Email.ToLower().Contains(TBoxSearch.Text.ToLower())).ToList();
+
+            // 4. СОРТИРОВКА (у тебя она была, но результат терялся)
+            if (ComboSort.SelectedIndex > 0)
             {
-                case 1: currentAgents = currentAgents.OrderBy(p => p.Title).ToList(); break;
-                case 2: currentAgents = currentAgents.OrderByDescending(p => p.Title).ToList(); break;
+                switch (ComboSort.SelectedIndex)
+                {
+                    case 1: currentAgents = currentAgents.OrderBy(p => p.Title).ToList(); break;
+                    case 2: currentAgents = currentAgents.OrderByDescending(p => p.Title).ToList(); break;
+                    case 3: currentAgents = currentAgents.OrderBy(p => p.Priority).ToList(); break;
+                    case 4: currentAgents = currentAgents.OrderByDescending(p => p.Priority).ToList(); break;
+                    case 5: currentAgents = currentAgents.OrderBy(p => p.DiscountPercent).ToList(); break;
+                    case 6: currentAgents = currentAgents.OrderByDescending(p => p.DiscountPercent).ToList(); break;
+                }
             }
 
-            _allAgentsList = currentAgents;
+            // --- ВОТ ЗДЕСЬ БЫЛА ОШИБКА ---
+            // 5. Логика пагинации (должна работать с УЖЕ отсортированным списком currentAgents)
+            _maxPage = (int)Math.Ceiling(currentAgents.Count * 1.0 / page_max);
 
-            _maxPage = (int)Math.Ceiling(_allAgentsList.Count / (double)page_max);
-            if (_maxPage == 0) _maxPage = 1;
-            if (_currentPage > _maxPage) _currentPage = _maxPage;
+            // Берем только нужную порцию данных для текущей страницы
+            var displayAgents = currentAgents.Skip((_currentPage - 1) * page_max).Take(page_max).ToList();
 
-            AgentListView.ItemsSource = _allAgentsList.Skip((_currentPage - 1) * page_max).Take(page_max).ToList();
+            // 6. Вывод в ListView
+            AgentListView.ItemsSource = displayAgents;
 
+            // Обновление кнопок страниц (твой метод)
             UpdatePagingControls();
         }
 
@@ -161,6 +168,41 @@ namespace Юмагулов_Глазки_save
             {
                 _db.ChangeTracker.Entries().ToList().ForEach(p => p.Reload());
                 UpdateData();
+            }
+        }
+
+        private void BtnChangePriority_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedAgents = AgentListView.SelectedItems.Cast<Agent>().ToList();
+
+            if (selectedAgents.Count == 0)
+            {
+                MessageBox.Show("Выберите хотя бы одного агента!");
+                return;
+            }
+
+            int maxPriority = selectedAgents.Max(a => a.Priority);
+
+            PriorityWindows priorityWindow = new PriorityWindows(maxPriority);
+            if (priorityWindow.ShowDialog() == true)
+            {
+                int newPriority = priorityWindow.NewPriority;
+
+                foreach (var agent in selectedAgents)
+                {
+                    agent.Priority = newPriority;
+                }
+
+                try
+                {
+                    _db.SaveChanges();
+                    MessageBox.Show("Приоритет обновлен!");
+                    UpdateData();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
         }
     }
