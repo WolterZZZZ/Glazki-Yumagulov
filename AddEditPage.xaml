@@ -6,10 +6,71 @@
       xmlns:local="clr-namespace:Юмагулов_Глазки_save"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="AddEditPage">
+      Title="AddEditPage" FontFamily="Century Gothic">
 
-    <Grid>
-        <TextBlock Text="Salam!" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   FontSize="30"></TextBlock>
+    <Grid Background="White">
+        <ScrollViewer>
+            <StackPanel Margin="20">
+                <TextBlock Text="Информация об агенте" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Width="400">
+                        <TextBlock Text="Наименование:"/>
+                        <TextBox Text="{Binding Title}" Margin="0,5,10,10"/>
+
+                        <TextBlock Text="Тип агента:"/>
+                        <ComboBox x:Name="ComboType" SelectedItem="{Binding AgentType}" DisplayMemberPath="Title" Margin="0,5,10,10"/>
+
+                        <TextBlock Text="Приоритет:"/>
+                        <TextBox Text="{Binding Priority}" Margin="0,5,10,10"/>
+
+                        <TextBlock Text="ИНН:"/>
+                        <TextBox Text="{Binding INN}" MaxLength="12" Margin="0,5,10,10"/>
+
+                        <TextBlock Text="КПП:"/>
+                        <TextBox Text="{Binding KPP}" MaxLength="9" Margin="0,5,10,10"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Адрес:"/>
+                        <TextBox Text="{Binding Address}" Margin="0,5,0,10"/>
+
+                        <TextBlock Text="Имя директора:"/>
+                        <TextBox Text="{Binding DirectorName}" Margin="0,5,0,10"/>
+
+                        <TextBlock Text="Телефон:"/>
+                        <TextBox Text="{Binding Phone}" Margin="0,5,0,10"/>
+
+                        <TextBlock Text="Email:"/>
+                        <TextBox Text="{Binding Email}" Margin="0,5,0,10"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="20,0,0,0" VerticalAlignment="Top">
+                        <TextBlock Text="Логотип:" HorizontalAlignment="Center"/>
+                        <Image x:Name="AgentLogo" Width="150" Height="150" Margin="0,10" Stretch="Uniform">
+                            <Image.Source>
+                                <Binding Path="Logo">
+                                    <Binding.TargetNullValue>
+                                        <BitmapImage UriSource="Res/picture.png" />
+                                    </Binding.TargetNullValue>
+                                </Binding>
+                            </Image.Source>
+                        </Image>
+                        <Button Content="Изменить" x:Name="BtnChangeLogo" Click="BtnChangeLogo_Click"  Background="#B175EE"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
+                    <Button x:Name="BtnSave" Content="Сохранить" Width="150" Height="35" Margin="10" Click="BtnSave_Click"  Background="#B175EE"/>
+                    <Button x:Name="BtnDelete" Content="Удалить" Width="150" Height="35" Margin="10" Click="BtnDelete_Click_1"  Background="#B175EE"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

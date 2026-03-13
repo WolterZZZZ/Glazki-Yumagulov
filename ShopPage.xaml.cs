@@ -4,12 +4,17 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Data.Entity; // Для работы .Include()
+using System.Windows.Media;
 
 namespace Юмагулов_Глазки_save
 {
+
     public partial class ShopPage : Page
     {
-        // Проверьте это имя в файле модели (edmx). Если подчеркивает — напишите мне название вашей модели.
+        private int _currentPage = 1;
+        private int _maxPage = 1;
+        private int page_max = 10;
+        private List<Agent> _allAgentsList = new List<Agent>();
         private Юмагуловглазки2Entities _db = new Юмагуловглазки2Entities();
 
         public ShopPage()
@@ -27,10 +32,8 @@ namespace Юмагулов_Глазки_save
         {
             try
             {
-                // Загружаем агентов вместе с их типом из связанных таблиц
                 var list = _db.Agent.Include(a => a.AgentType).ToList();
 
-                // Теперь AgentListView будет найден, так как мы исправили XAML
                 AgentListView.ItemsSource = list;
             }
             catch (Exception ex)
@@ -41,19 +44,17 @@ namespace Юмагулов_Глазки_save
 
         private void UpdateData()
         {
-
             var currentAgents = _db.Agent
                 .Include(a => a.AgentType)
                 .Include("ProductSale.Product")
                 .ToList();
 
-            string searchText = TBoxSearch.Text.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").ToLower();
+            string searchText = TBoxSearch.Text.ToLower().Replace(" ", "");
             if (!string.IsNullOrWhiteSpace(searchText))
             {
                 currentAgents = currentAgents.Where(p =>
-                    p.Title.Replace(" ", "").ToLower().Contains(searchText) ||
-                    p.Phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Contains(searchText) ||
-                    (p.Email != null && p.Email.ToLower().Contains(searchText)) 
+                    p.Title.ToLower().Contains(searchText) ||
+                    p.Phone.Replace("(", "").Replace(")", "").Replace("-", "").Contains(searchText)
                 ).ToList();
             }
 
@@ -63,20 +64,21 @@ namespace Юмагулов_Глазки_save
                 currentAgents = currentAgents.Where(p => p.AgentTypeID == selectedType.ID).ToList();
             }
 
-            if (ComboSort.SelectedIndex > 0)
+            switch (ComboSort.SelectedIndex)
             {
-                switch (ComboSort.SelectedIndex)
-                {
-                    case 1: currentAgents = currentAgents.OrderBy(p => p.Title).ToList(); break;
-                    case 2: currentAgents = currentAgents.OrderByDescending(p => p.Title).ToList(); break;
-                    case 3: currentAgents = currentAgents.OrderBy(p => p.Priority).ToList(); break;
-                    case 4: currentAgents = currentAgents.OrderByDescending(p => p.Priority).ToList(); break;
-                    case 5: currentAgents = currentAgents.OrderBy(p => p.DiscountPercent).ToList(); break;
-                    case 6: currentAgents = currentAgents.OrderByDescending(p => p.DiscountPercent).ToList(); break;
-                }
+                case 1: currentAgents = currentAgents.OrderBy(p => p.Title).ToList(); break;
+                case 2: currentAgents = currentAgents.OrderByDescending(p => p.Title).ToList(); break;
             }
 
-            AgentListView.ItemsSource = currentAgents;
+            _allAgentsList = currentAgents;
+
+            _maxPage = (int)Math.Ceiling(_allAgentsList.Count / (double)page_max);
+            if (_maxPage == 0) _maxPage = 1;
+            if (_currentPage > _maxPage) _currentPage = _maxPage;
+
+            AgentListView.ItemsSource = _allAgentsList.Skip((_currentPage - 1) * page_max).Take(page_max).ToList();
+
+            UpdatePagingControls();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -98,6 +100,68 @@ namespace Юмагулов_Глазки_save
         private void ComboSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateData();
+        }
+        private void UpdatePagingControls()
+        {
+            TextBlockPageInfo.Text = $"{_currentPage} из {_maxPage}";
+            StackPanelPages.Children.Clear();
+
+            for (int i = 1; i <= _maxPage; i++)
+            {
+                Button btn = new Button
+                {
+                    Content = i.ToString(),
+                    Width = 30,
+                    Height = 30,
+                    Margin = new Thickness(2),
+                    Padding = new Thickness(5, 0, 5, 0),
+                    Background = i == _currentPage ? Brushes.LightGray : Brushes.White
+                };
+                int pageNum = i;
+                btn.Click += (s, e) => { _currentPage = pageNum; UpdateData(); };
+                StackPanelPages.Children.Add(btn);
+            }
+        }
+        private void BtnPrev_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage > 1)
+            {
+                _currentPage--;
+                UpdateData();
+            }
+        }
+
+        private void BtnNext_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage < _maxPage)
+            {
+                _currentPage++;
+                UpdateData();
+            }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            Manager.MainFrame.Navigate(new AddEditPage(null));
+        }
+
+        private void BtnEdit_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedAgent = (sender as Button).DataContext as Agent;
+            Manager.MainFrame.Navigate(new AddEditPage(selectedAgent));
+        }
+        private void Page_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                _db.ChangeTracker.Entries().ToList().ForEach(p => p.Reload());
+                UpdateData();
+            }
         }
     }
 }
